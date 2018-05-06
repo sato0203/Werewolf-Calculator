@@ -1,5 +1,5 @@
 import * as mocha from "mocha";
-import * as assert from "assert"
+import * as assert from "power-assert"
 import { Container } from "inversify";
 import * as Rx from "rxjs/Rx";
 import { List } from "linqts";

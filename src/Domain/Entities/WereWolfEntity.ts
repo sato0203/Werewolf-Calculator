@@ -38,6 +38,11 @@ export enum PsychicResult{
 }
 
 export class TokenPlayer{
+    constructor(name:String){
+        this.name = name;
+        this.co = None;
+        this.aliveState = AliveState.Alive;
+    }
     name:String;
     co:Option<Title> ;
     aliveState:AliveState;
