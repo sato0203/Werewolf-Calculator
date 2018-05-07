@@ -24,11 +24,11 @@ token.players = [
     new TokenPlayer("マイク"),
     new TokenPlayer("エリック"),
     new TokenPlayer("バニラ"),
-    new TokenPlayer("メアリー")/*,
+    new TokenPlayer("メアリー"),
     new TokenPlayer("ジェイ"),
     new TokenPlayer("ショーン"),
     new TokenPlayer("ジェシカ"),
-    new TokenPlayer("サンドラ")*/
+    new TokenPlayer("サンドラ")
 ]
 
 dispatcher.search.next(token);

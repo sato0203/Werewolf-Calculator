@@ -18,176 +18,61 @@ export class WereWolfStore implements IWereWolfStore{
         return this._searchResult.asObservable();
     }
 
+    
     private search = (token:SearchToken) => {
         console.log("searchStart" + performance.now())
-        var result = new SearchResult();
-        result.token = token;
-        const titles = [new Villager(),new Seer(),new Psychic(),new Hunter(),new Wolf(),new Madman()];
-        //var titleList = new List<Title>(titles);
-        //var playerList:List<[TokenPlayer,Title]> = titleList.Select(x => [token.players[0],x] as [TokenPlayer,Title])
-        var playerList:[TokenPlayer,Title][][] = token.players
-                                                         .map(player => titles
-                                                            .map(title =>
-                                                                {
-                                                                    return [player,title] as [TokenPlayer,Title]
-                                                                }
-                                                            )
-                                                         );
-        
-        var answerList:List<List<[TokenPlayer,Title]>>;
-        answerList = new List(playerList[0].map(x => new List([x])))
-        
-        const patternCheck = (titleName:string,num:number) => (pattern:List<[TokenPlayer,Title]>) => {
-            return pattern.Where(pAndT => pAndT["1"].titleName == titleName).Count() <= num
+        //ToDo:メモ化(今で十分早いけど。)
+        const searchFunction:(a:string[],b:number,c:number,d:number,e:number,f:number,g:number,h:{}) => List<string>[]
+         = (arr:string[],villager:number,wolf:number,seer:number,hunter:number,psychic:number,madman:number,memo:Array<{key:string,value:string[][]}>) => {
+            const seed = Enumerable.Range(0,6).Select(_ => arr.slice()).ToArray();
+            let answer = new Array<List<string>>();
+            if(villager != 0){
+                seed[0].push("villager")
+                const a = searchFunction(seed[0],villager-1,wolf,seer,hunter,psychic,madman,memo);
+                answer = answer.concat(a)
+            }
+            if(wolf != 0){
+                seed[1].push("wolf")
+                const a = searchFunction(seed[1],villager,wolf-1,seer,hunter,psychic,madman,memo);
+                answer = answer.concat(a)
+            }
+            if(seer != 0){
+                seed[2].push("seer")
+                const a = searchFunction(seed[2],villager,wolf,seer-1,hunter,psychic,madman,memo);
+                answer = answer.concat(a)
+            }
+            if(hunter != 0){
+                seed[3].push("hunter")
+                const a = searchFunction(seed[3],villager,wolf,seer,hunter-1,psychic,madman,memo);
+                answer = answer.concat(a)
+            }
+            if(psychic != 0){
+                seed[4].push("psychic")
+                const a = searchFunction(seed[4],villager,wolf,seer,hunter,psychic-1,madman,memo);
+                answer = answer.concat(a)
+            }
+            if(madman != 0){
+                seed[5].push("madman")
+                const a = searchFunction(seed[5],villager,wolf,seer,hunter,psychic,madman-1,memo);
+                //memo[`${villager},${wolf},${seer},${hunter},${psychic},${madman}`] = a;
+                answer = answer.concat(a)
+            }
+            if(villager == 0 && wolf == 0 && seer == 0 && hunter == 0 && psychic == 0 && madman == 0){
+                answer = answer.concat(new List<string>(seed[0]))
+            }
+            return answer;
         }
-
-        var playerListTail = playerList.filter(x => playerList.indexOf(x) != 0);
-        console.log("1人目の準備完了" + performance.now())
-        playerListTail.forEach(ls => {
-                answerList = answerList.SelectMany( (a:List<[TokenPlayer,Title]>) => {
-                var arr:List<List<[TokenPlayer,Title]>> = new List([]);
-                ls.forEach(ele => {
-                        var arr2 = JSON.parse(JSON.stringify(a.ToArray()));
-                        arr2.push(ele)
-                        arr.Add(new List(arr2))
-                })
-                return arr;
-            }).Where(patternCheck(Villager.titleNameStatic,3))//.Where(patternCheck(Villager.titleNameStatic,3))
-            .Where(patternCheck(Seer.titleNameStatic,1))
-            .Where(patternCheck(Psychic.titleNameStatic,1))
-            .Where(patternCheck(Hunter.titleNameStatic,1))
-            .Where(patternCheck(Wolf.titleNameStatic,2))
-            .Where(patternCheck(Madman.titleNameStatic,1)).ToList();
-            console.log("2人目以降" + performance.now())
-        })
-        /*for(var i=1;playerList.length;i++){                                            
-            var answerList = answerList.SelectMany(a => {
-                var arr:List<List<[TokenPlayer,Title]>> = new List([]);
-                    for(var j =0;playerList[i].length;j++){
-                        var arr2 = a.ToArray();
-                        arr2.push(playerList[i][j])
-                        arr.Add(new List(arr2))
-                    }
-                return arr;
-            });
-        }*/
-        //var answerPattern:List<List<[TokenPlayer,Title]>> = playerList.Select(pAndT => new List<[TokenPlayer,Title]>([pAndT])).ToList();
-
-        console.dir(playerList)
-        console.dir(answerList)
-
-        return result;
+        var answer = searchFunction([],3,2,1,1,1,1,{});
+        var ls = answer.map(a => 
+            Enumerable.Range(0,token.players.length).Select(i => {
+                var x = a.ToArray()[i]
+                var p = token.players[i]
+                return [x,p] as [string,TokenPlayer]
+        }))
+        console.dir(ls)
     }
 }
 
 export interface IWereWolfStore{
     searchResult:Observable<SearchResult>;
 }
-
-/*
-
-
-        var testLs:List<List<[TokenPlayer,Title]>> = answerPattern.ToList();
-        var testLs2 = testLs.SelectMany(x => titleList.Select(y => 
-            {
-                var xx = x.Select(xxx => );
-                console.dir(xx)
-                xx.Add([token.players[1],y])
-                return xx;
-            }
-        )).ToList();
-
-        /*const patternCheck = (titleName:string,num:number) => (pattern:List<[TokenPlayer,Title]>) => {
-            return pattern.Where(pAndT => pAndT["1"].titleName == titleName).Count() == num
-        }
-
-        playerList.Select(p => answerPattern.Select(pattern => {
-            pattern
-        }))
-
-        var testLs:List<List<[TokenPlayer,Title]>> = answerPattern.ToList();
-        var testLs2 = testLs.SelectMany(x => titleList.Select(y => 
-            {
-                var xx = x.ToList();
-                console.dir(xx)
-                xx.Add([token.players[1],y])
-                return xx;
-            }
-        )).ToList();
-
-        console.dir(titleList)
-        console.dir(testLs2)*/
-
-        /*for(var i=1;i<playerList.Count();i++){
-            answerPattern = answerPattern.SelectMany(x => titleList.Select(y => 
-                {
-                    var xx = x.ToList();
-                    xx.Add([token.players[i],y])
-                    return xx;
-                }
-            )).ToList();
-            answerPattern = answerPattern.Where(patternCheck(Villager.titleNameStatic,3))
-                                         .Where(patternCheck(Seer.titleNameStatic,1))
-                                         .Where(patternCheck(Psychic.titleNameStatic,1))
-                                         .Where(patternCheck(Hunter.titleNameStatic,1))
-                                         .Where(patternCheck(Wolf.titleNameStatic,2))
-                                         .Where(patternCheck(Madman.titleNameStatic,1)).ToList();
-        }*/
-
-        /*result.searchResult = answerPattern.Select(pAndTLs => pAndTLs.Select(pAndT => {
-            const player = new ResultPlayer();
-            player.name = pAndT["0"].name;
-            player.co = pAndT["0"].co;
-            player.aliveState = pAndT["0"].aliveState;
-            player.title = titles.filter(t => t.titleName === pAndT["1"].titleName)[0]
-            return player;
-        }).ToArray()).ToArray();
-        console.log("helloworld")
-        this._searchResult.next(result)*/
-
-
-/*
-
-        var allPatternEachPlayer:[ResultPlayer,Title][][] = token.players.map(player => {
-            let p = new ResultPlayer();
-            p.co = player.co;
-            p.name = player.name;
-            p.aliveState = player.aliveState;
-            return p.co.match({
-                some:(c) => {
-                    return [
-                        [p,c],
-                        [p,new Wolf()],
-                        [p,new Madman()]
-                    ] as [ResultPlayer,Title][]
-                },
-                none:() => {
-                    return [
-                        [p,new Villager()],
-                        [p,new Seer()],
-                        [p,new Psychic()],
-                        [p,new Hunter()],
-                        [p,new Wolf()],
-                        [p,new Madman()]
-                    ] as [ResultPlayer,Title][]
-                }
-            })
-        });
-        var allPattern:ResultPlayer = [() => {
-
-        }]
-
-        const patternCheck = (titleName:string,num:number) => (pattern:[ResultPlayer,Title][]) => {
-            return pattern.filter(pAndT => pAndT["1"].titleName == titleName).length == num
-        }
-        var answerPattern = allPattern
-                  .filter(patternCheck(Villager.titleNameStatic,3))
-                  .filter(patternCheck(Seer.titleNameStatic,1))
-                  .filter(patternCheck(Psychic.titleNameStatic,1))
-                  .filter(patternCheck(Hunter.titleNameStatic,1))
-                  .filter(patternCheck(Wolf.titleNameStatic,2))
-                  .filter(patternCheck(Madman.titleNameStatic,1))
-                  .map(pattern => {pattern["1"].
-                      const player = pattern["1"].
-                  })
-        this._searchResult.next(answerPattern) */
